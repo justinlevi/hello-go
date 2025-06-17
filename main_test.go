@@ -132,7 +132,7 @@ func BenchmarkHelloHandler(b *testing.B) {
 
 func TestJSONEncoding(t *testing.T) {
 	resp := Response{Message: "Test Message"}
-	
+
 	data, err := json.Marshal(resp)
 	if err != nil {
 		t.Fatalf("failed to marshal response: %v", err)
@@ -197,7 +197,7 @@ func TestPOSTHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var body []byte
 			var err error
-			
+
 			switch v := tt.body.(type) {
 			case string:
 				body = []byte(v)
@@ -207,7 +207,7 @@ func TestPOSTHandler(t *testing.T) {
 					t.Fatalf("failed to marshal request body: %v", err)
 				}
 			}
-			
+
 			req := httptest.NewRequest(http.MethodPost, "/hello", bytes.NewReader(body))
 			if tt.contentType != "" {
 				req.Header.Set("Content-Type", tt.contentType)
@@ -222,18 +222,18 @@ func TestPOSTHandler(t *testing.T) {
 
 			respBody := strings.TrimSpace(rec.Body.String())
 			expectedBody := strings.TrimSpace(tt.expectedBody)
-			
+
 			if tt.expectedStatus == http.StatusOK {
 				var resp Response
 				if err := json.Unmarshal([]byte(respBody), &resp); err != nil {
 					t.Fatalf("failed to unmarshal response: %v", err)
 				}
-				
+
 				var expectedResp Response
 				if err := json.Unmarshal([]byte(expectedBody), &expectedResp); err != nil {
 					t.Fatalf("failed to unmarshal expected response: %v", err)
 				}
-				
+
 				if resp.Message != expectedResp.Message {
 					t.Errorf("expected message '%s', got '%s'", expectedResp.Message, resp.Message)
 				}
@@ -274,21 +274,21 @@ func TestHealthHandler(t *testing.T) {
 func TestLoggingMiddleware(t *testing.T) {
 	var logBuffer bytes.Buffer
 	logger := log.New(&logBuffer, "[test] ", log.LstdFlags)
-	
+
 	handler := loggingMiddleware(logger, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("test"))
 	}))
-	
+
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
 	rec := httptest.NewRecorder()
-	
+
 	handler.ServeHTTP(rec, req)
-	
+
 	if rec.Code != http.StatusOK {
 		t.Errorf("expected status %d, got %d", http.StatusOK, rec.Code)
 	}
-	
+
 	logOutput := logBuffer.String()
 	if !strings.Contains(logOutput, "INFO:") {
 		t.Error("expected log output to contain 'INFO:'")
@@ -301,16 +301,16 @@ func TestLoggingMiddleware(t *testing.T) {
 func TestPanicRecovery(t *testing.T) {
 	var logBuffer bytes.Buffer
 	logger := log.New(&logBuffer, "[test] ", log.LstdFlags)
-	
+
 	handler := loggingMiddleware(logger, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("test panic")
 	}))
-	
+
 	req := httptest.NewRequest(http.MethodGet, "/panic", nil)
 	rec := httptest.NewRecorder()
-	
+
 	handler.ServeHTTP(rec, req)
-	
+
 	logOutput := logBuffer.String()
 	if !strings.Contains(logOutput, "ERROR: Panic recovered") {
 		t.Error("expected panic to be recovered and logged")
