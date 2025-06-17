@@ -1,5 +1,7 @@
 # Hello API
 
+[![CI](https://github.com/USERNAME/hello-go/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/hello-go/actions/workflows/ci.yml)
+
 A simple Go HTTP JSON API server that demonstrates Go fundamentals and best practices.
 
 ## Overview
@@ -13,14 +15,23 @@ This project implements a minimal web API that returns JSON responses, teaching:
 
 ## Project Structure
 
+This project follows the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) conventions. While our simple API currently keeps all code in `main.go`, we've prepared the directory structure for future growth:
+
 ```
 hello-api/
 ├── go.mod          # Go module definition
 ├── main.go         # Main application entry point
 ├── main_test.go    # Unit tests
 ├── Dockerfile      # Container configuration
-└── README.md       # This file
+├── README.md       # This file
+├── cmd/            # Main applications (prepared for future use)
+├── internal/       # Private application code (prepared for future use)
+├── pkg/            # Library code that can be used by external applications
+├── test/           # Additional external test apps and test data
+└── docs/           # Design and user documents
 ```
+
+Each directory contains a README.md explaining its purpose and usage guidelines.
 
 ## Getting Started
 
