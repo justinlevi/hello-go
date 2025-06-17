@@ -70,10 +70,26 @@ Scenario: {Scenario Name}
 - Container and Kubernetes deployment tests
 - Multi-process coordination tests
 
+#### Behavioral Contract
+- Define the complete interface contract including:
+  - All inputs (parameters, headers, body formats)
+  - All outputs (success responses, error responses, status codes)
+  - State transitions and side effects
+  - Integration points with other components
+- Specify invariants that must hold across all scenarios
+- Document assumptions and constraints
+
 #### Parent/Sub Tasks
 - Parent Task: Link to parent ticket
 - Sub Tasks: List of dependent work items
 - Dependencies: External blockers or prerequisites
+
+#### Cross-Task Validation
+- Identify all interfaces this task exposes or consumes
+- List integration points with other tasks
+- Define shared data structures and conventions
+- Specify compatibility requirements
+- Document any breaking changes to existing interfaces
 
 ## Numbering Convention
 
@@ -123,6 +139,11 @@ Examples:
 - Critical paths require 95%+ coverage
 - Concurrent operation tests required
 - Performance benchmarks for multi-threaded code
+- **Contract-Driven Testing**:
+  - Tests must validate the complete behavioral contract
+  - Test data and assertions must reflect real-world usage
+  - Cross-component integration must be validated
+  - Tests should be the executable specification
 
 ### Modular Code
 - Single responsibility principle
@@ -170,6 +191,10 @@ Examples:
    - Make small, focused commits
    - Write tests first (TDD approach)
    - Implement with thread safety in mind
+   - **System Coherence**:
+     - Validate consistency with existing components
+     - Ensure contracts align across task boundaries
+     - Verify end-to-end scenarios work as expected
 
 3. **Review & Testing**
    - Code review required before merge
@@ -206,6 +231,14 @@ Before marking any task complete:
 - [ ] Multi-process coordination tested
 - [ ] Thread safety verified
 
+### Pre-Completion Validation
+- [ ] All behavioral contracts validated
+- [ ] Cross-task integration verified
+- [ ] End-to-end scenarios tested
+- [ ] No compilation warnings or errors
+- [ ] All dependencies properly managed
+- [ ] Interface compatibility confirmed
+
 ## Best Practices
 
 - Keep tasks small and focused (1-3 days max)
@@ -217,6 +250,29 @@ Before marking any task complete:
 - Consider concurrency implications in all designs
 - Plan for horizontal scaling from the start
 - Implement comprehensive logging and monitoring
+
+## Task Definition Excellence
+
+### Completeness Principle
+Every task must define:
+1. **What** - The functionality to implement
+2. **How** - The interface contracts and behaviors
+3. **Why** - The rationale and constraints
+4. **With** - The integration requirements
+5. **Proof** - The validation criteria
+
+### System Thinking
+- No task exists in isolation
+- Define how components interact
+- Specify shared conventions early
+- Document interface evolution
+- Consider the full lifecycle
+
+### Executable Specifications
+- Acceptance criteria must be testable
+- Examples should be runnable
+- Contracts must be enforceable
+- Integration must be verifiable
 
 ## Tools Integration
 
