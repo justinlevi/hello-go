@@ -1,6 +1,9 @@
 # Hello API
 
-[![CI](https://github.com/USERNAME/hello-go/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/hello-go/actions/workflows/ci.yml)
+[![CI](https://github.com/justinlevi/hello-go/actions/workflows/ci.yml/badge.svg)](https://github.com/justinlevi/hello-go/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/justinlevi/hello-go)](https://goreportcard.com/report/github.com/justinlevi/hello-go)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org)
 
 A simple Go HTTP JSON API server that demonstrates Go fundamentals and best practices.
 
