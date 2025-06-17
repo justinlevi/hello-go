@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     main.go
 
 # Final stage - using alpine for health check support
-FROM alpine:3.18
+FROM alpine:3.22
 
 # Install ca-certificates for HTTPS support
 RUN apk --no-cache add ca-certificates
