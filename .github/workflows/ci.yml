@@ -10,8 +10,8 @@ env:
   GO_VERSION: '1.21'
 
 jobs:
-  dagger-ci:
-    name: Dagger CI Pipeline
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     
     steps:
