@@ -133,6 +133,22 @@ This project follows Go best practices including:
 - Container support
 - Graceful shutdown
 
+### CI/CD with Dagger
+
+This project uses [Dagger](https://dagger.io) for portable CI/CD pipelines. Run the complete pipeline locally:
+
+```bash
+dagger call ci --source=.
+```
+
+Or run individual steps:
+```bash
+dagger call format --source=.   # Check code formatting
+dagger call test --source=.     # Run tests with coverage
+dagger call build --source=.    # Build multi-platform binaries
+dagger call docker --source=.   # Build and test Docker image
+```
+
 ## License
 
 This project is for educational purposes.
