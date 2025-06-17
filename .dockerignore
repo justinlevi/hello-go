@@ -1,0 +1,42 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Test files
+*_test.go
+test/
+
+# Build artifacts
+hello-api
+bin/
+build/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Kubernetes files
+*.yaml
+k8s/
+
+# Tasks folder
+tasks/
+
+# Temporary files
+*.tmp
+tmp/
