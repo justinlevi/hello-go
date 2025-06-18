@@ -271,6 +271,172 @@ func TestHealthHandler(t *testing.T) {
 	}
 }
 
+func TestPingHandler(t *testing.T) {
+	tests := []struct {
+		name           string
+		method         string
+		expectedStatus int
+		expectedPong   string
+	}{
+		{
+			name:           "GET ping returns pong",
+			method:         http.MethodGet,
+			expectedStatus: http.StatusOK,
+			expectedPong:   "pong",
+		},
+		{
+			name:           "POST ping returns pong",
+			method:         http.MethodPost,
+			expectedStatus: http.StatusOK,
+			expectedPong:   "pong",
+		},
+		{
+			name:           "PUT ping returns pong",
+			method:         http.MethodPut,
+			expectedStatus: http.StatusOK,
+			expectedPong:   "pong",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, "/ping", nil)
+			rec := httptest.NewRecorder()
+
+			pingHandler(rec, req)
+
+			if rec.Code != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, rec.Code)
+			}
+
+			contentType := rec.Header().Get("Content-Type")
+			if contentType != "application/json" {
+				t.Errorf("expected Content-Type 'application/json', got '%s'", contentType)
+			}
+
+			var resp PingResponse
+			if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
+				t.Fatalf("failed to decode response: %v", err)
+			}
+
+			if resp.Pong != tt.expectedPong {
+				t.Errorf("expected pong '%s', got '%s'", tt.expectedPong, resp.Pong)
+			}
+		})
+	}
+}
+
+func TestInfoHandler(t *testing.T) {
+	tests := []struct {
+		name           string
+		method         string
+		url            string
+		headers        map[string]string
+		expectedStatus int
+		validate       func(t *testing.T, resp InfoResponse)
+	}{
+		{
+			name:           "GET info with basic request",
+			method:         http.MethodGet,
+			url:            "/info",
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, resp InfoResponse) {
+				if resp.Method != http.MethodGet {
+					t.Errorf("expected method %s, got %s", http.MethodGet, resp.Method)
+				}
+				if resp.URL != "/info" {
+					t.Errorf("expected URL /info, got %s", resp.URL)
+				}
+			},
+		},
+		{
+			name:           "GET info with query parameters",
+			method:         http.MethodGet,
+			url:            "/info?foo=bar&test=123",
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, resp InfoResponse) {
+				if resp.QueryParams["foo"] != "bar" {
+					t.Errorf("expected query param foo=bar, got foo=%s", resp.QueryParams["foo"])
+				}
+				if resp.QueryParams["test"] != "123" {
+					t.Errorf("expected query param test=123, got test=%s", resp.QueryParams["test"])
+				}
+			},
+		},
+		{
+			name:   "POST info with custom headers",
+			method: http.MethodPost,
+			url:    "/info",
+			headers: map[string]string{
+				"X-Custom-Header": "custom-value",
+				"User-Agent":      "test-agent",
+			},
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, resp InfoResponse) {
+				if resp.Method != http.MethodPost {
+					t.Errorf("expected method %s, got %s", http.MethodPost, resp.Method)
+				}
+				if resp.Headers["X-Custom-Header"] != "custom-value" {
+					t.Errorf("expected header X-Custom-Header=custom-value, got %s", resp.Headers["X-Custom-Header"])
+				}
+				if resp.UserAgent != "test-agent" {
+					t.Errorf("expected user agent test-agent, got %s", resp.UserAgent)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, tt.url, nil)
+
+			// Add custom headers if provided
+			for key, value := range tt.headers {
+				req.Header.Set(key, value)
+			}
+
+			// Set a default host if not provided
+			if req.Host == "" {
+				req.Host = "example.com"
+			}
+
+			// Set RemoteAddr for testing
+			req.RemoteAddr = "192.168.1.1:12345"
+
+			rec := httptest.NewRecorder()
+
+			infoHandler(rec, req)
+
+			if rec.Code != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, rec.Code)
+			}
+
+			contentType := rec.Header().Get("Content-Type")
+			if contentType != "application/json" {
+				t.Errorf("expected Content-Type 'application/json', got '%s'", contentType)
+			}
+
+			var resp InfoResponse
+			if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
+				t.Fatalf("failed to decode response: %v", err)
+			}
+
+			// Basic validations that apply to all tests
+			if resp.Host != req.Host {
+				t.Errorf("expected host %s, got %s", req.Host, resp.Host)
+			}
+			if resp.RemoteAddr != req.RemoteAddr {
+				t.Errorf("expected remote addr %s, got %s", req.RemoteAddr, resp.RemoteAddr)
+			}
+
+			// Run test-specific validations
+			if tt.validate != nil {
+				tt.validate(t, resp)
+			}
+		})
+	}
+}
+
 func TestLoggingMiddleware(t *testing.T) {
 	var logBuffer bytes.Buffer
 	logger := log.New(&logBuffer, "[test] ", log.LstdFlags)
@@ -314,5 +480,28 @@ func TestPanicRecovery(t *testing.T) {
 	logOutput := logBuffer.String()
 	if !strings.Contains(logOutput, "ERROR: Panic recovered") {
 		t.Error("expected panic to be recovered and logged")
+	}
+}
+
+func BenchmarkPingHandler(b *testing.B) {
+	req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rec := httptest.NewRecorder()
+		pingHandler(rec, req)
+	}
+}
+
+func BenchmarkInfoHandler(b *testing.B) {
+	req := httptest.NewRequest(http.MethodGet, "/info?test=value", nil)
+	req.Header.Set("User-Agent", "benchmark-test")
+	req.Host = "benchmark.test"
+	req.RemoteAddr = "127.0.0.1:8080"
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rec := httptest.NewRecorder()
+		infoHandler(rec, req)
 	}
 }
