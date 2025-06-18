@@ -18,6 +18,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/hello", loggingMiddleware(logger, http.HandlerFunc(helloHandler)))
 	mux.Handle("/health", loggingMiddleware(logger, http.HandlerFunc(healthHandler)))
+	mux.Handle("/ping", loggingMiddleware(logger, http.HandlerFunc(pingHandler)))
+	mux.Handle("/info", loggingMiddleware(logger, http.HandlerFunc(infoHandler)))
 
 	server := &http.Server{
 		Addr:         ":8080",
@@ -65,6 +67,20 @@ type ErrorResponse struct {
 
 type HealthResponse struct {
 	Status string `json:"status"`
+}
+
+type PingResponse struct {
+	Pong string `json:"pong"`
+}
+
+type InfoResponse struct {
+	Method      string            `json:"method"`
+	URL         string            `json:"url"`
+	Host        string            `json:"host"`
+	RemoteAddr  string            `json:"remote_addr"`
+	UserAgent   string            `json:"user_agent"`
+	Headers     map[string]string `json:"headers"`
+	QueryParams map[string]string `json:"query_params"`
 }
 
 var requestCounter uint64
@@ -121,6 +137,54 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Printf("ERROR: Failed to encode health response: %v", err)
+		respondWithError(w, http.StatusInternalServerError, "Internal Server Error", "ENCODING_ERROR")
+		return
+	}
+}
+
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	resp := PingResponse{Pong: "pong"}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("ERROR: Failed to encode ping response: %v", err)
+		respondWithError(w, http.StatusInternalServerError, "Internal Server Error", "ENCODING_ERROR")
+		return
+	}
+}
+
+func infoHandler(w http.ResponseWriter, r *http.Request) {
+	headers := make(map[string]string)
+	for key, values := range r.Header {
+		if len(values) > 0 {
+			headers[key] = values[0]
+		}
+	}
+
+	queryParams := make(map[string]string)
+	for key, values := range r.URL.Query() {
+		if len(values) > 0 {
+			queryParams[key] = values[0]
+		}
+	}
+
+	resp := InfoResponse{
+		Method:      r.Method,
+		URL:         r.URL.String(),
+		Host:        r.Host,
+		RemoteAddr:  r.RemoteAddr,
+		UserAgent:   r.UserAgent(),
+		Headers:     headers,
+		QueryParams: queryParams,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("ERROR: Failed to encode info response: %v", err)
 		respondWithError(w, http.StatusInternalServerError, "Internal Server Error", "ENCODING_ERROR")
 		return
 	}
