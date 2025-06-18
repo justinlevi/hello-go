@@ -1,4 +1,4 @@
-# Tasks Management Directive - EnterpraXis
+# Tasks Management Directive
 
 ## Overview
 
